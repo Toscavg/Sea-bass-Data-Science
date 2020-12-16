@@ -1,0 +1,41 @@
+
+###These are the packages we need for making the heatmap
+library("gplots")
+library("heatmap.plus") 
+library("RColorBrewer")
+library("colorRamps")
+
+###This is where my data is located
+setwd("C:/r_data")
+test<-read.csv("hmSeabass_female.csv")
+
+###Specify control and treatment groups
+ovariesControl <- test[grep("OLT",row.names(test)),]
+ovariesTreatment <- test[grep("OHT",row.names(test)),]
+
+###Specify colors
+condition_colors <- unlist(lapply(row.names(test),function(x){
+  if(grepl("OLT",x))'#ef8080' #ovaries
+  else if(grepl('OHT',x)) '#8a0000' #testes
+  
+}))
+
+pal <- colorRamps::blue2yellow
+
+pdf("hmSeabass_female.pdf", width=10, height=10)
+
+###We only want numbers
+input <- as.matrix(t(test))
+input<-input[,-(1:8)]
+
+###Heatmap code
+heatmap.2(input, trace="none", density="none", col=pal,
+          keysize = 1,
+          cexRow = 1.3,
+          cexCol = 2,
+          margins = c(20, 13),
+          offsetRow = 0.5,
+          offsetCol = 0.3,
+          ColSideColors=condition_colors, 
+          scale="row",
+          hclust=function(x) hclust(x,method="average"))
