@@ -1,0 +1,48 @@
+library(readxl)
+library(writexl)
+library("DESeq2")
+
+
+original_data <- read_excel("C:\\r_data\\Dla_annotation_count_res.xlsx",range = cell_cols("A:X"))
+
+row_name <- original_data[["Anno_idx"]]
+
+###We only select the ovary samples from the file
+female_data <- original_data[ c(17:24) ]
+
+cts <- as.matrix(female_data)
+
+rownames(cts) <- row_name
+
+coldata  <- matrix("treated", length(colnames(cts)), 1)
+rownames(coldata) <- colnames(cts)
+colnames(coldata) <- c("condition")
+
+###We have to specify the treated and untreated samples
+coldata["FLT8","condition"] <- "untreated"
+coldata["FLT7","condition"] <- "untreated"
+coldata["FLT6","condition"] <- "untreated"
+coldata["FLT5","condition"] <- "untreated"
+coldata["FHT16","condition"] <- "treated"
+coldata["FHT15","condition"] <- "treated"
+coldata["FHT14","condition"] <- "treated"
+coldata["FHT13","condition"] <- "treated"
+
+coldata <- as.data.frame(coldata)
+
+coldata$condition <- factor(coldata$condition)
+
+###We want log fold change and padj, thus we use the following
+
+dds <- DESeqDataSetFromMatrix(countData = cts,
+                              colData = coldata,
+                              design = ~ condition)
+
+dds <- DESeq(dds)
+res <- results(dds,contrast=c("condition","treated","untreated"))
+res["ola_miRNA"] = original_data["ola_miRNA"]
+res <- res[,c(7,1:6)]
+
+###save output as excel
+write_xlsx(as.data.frame(res), "C:\\r_data\\miRNA_DE_Seabass_female.xlsx")
+
