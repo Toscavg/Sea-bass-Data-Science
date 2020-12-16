@@ -1,12 +1,18 @@
+
+###We want our final data in Excel
 library(readxl)
 library(writexl)
+
+###For analysis, we use the package DESeq2
 library("DESeq2")
 
+###Now we use the output file from the normalization "Dla_annotation_count_res.xlsx"1444426598
 
-original_data <- read_excel("C:\\r_data\\Dla_annotation_count.xlsx",range = cell_cols("A:X"))
+original_data <- read_excel("C:\\r_data\\Dla_annotation_count_res.xlsx",range = cell_cols("A:X"))
 
 row_name <- original_data[["Anno_idx"]]
 
+###We only select the testis samples from the file
 male_data <- original_data[ c(9:16) ]
 
 cts <- as.matrix(male_data)
@@ -17,6 +23,7 @@ coldata  <- matrix("treated", length(colnames(cts)), 1)
 rownames(coldata) <- colnames(cts)
 colnames(coldata) <- c("condition")
 
+###We have to specify the treated and untreated samples
 coldata["MLT4","condition"] <- "untreated"
 coldata["MLT3","condition"] <- "untreated"
 coldata["MLT2","condition"] <- "untreated"
@@ -31,6 +38,8 @@ coldata <- as.data.frame(coldata)
 
 coldata$condition <- factor(coldata$condition)
 
+###We want log fold change and padj, thus we use the following
+
 dds <- DESeqDataSetFromMatrix(countData = cts,
                               colData = coldata,
                               design = ~ condition)
@@ -40,5 +49,6 @@ res <- results(dds,contrast=c("condition","treated","untreated"))
 res["ola_miRNA"] = original_data["ola_miRNA"]
 res <- res[,c(7,1:6)]
 
+###save output as excel
 write_xlsx(as.data.frame(res), "C:\\r_data\\miRNA_DE_Seabass_male.xlsx")
 
