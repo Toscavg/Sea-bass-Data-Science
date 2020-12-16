@@ -65,6 +65,13 @@ total <-  merge(original_data, normalData,by="Anno_idx", sort= FALSE)
 ###Our output, the excel file with normalized reads
 write_xlsx(total, "C:\\r_data\\Dla_annotation_count_res.xlsx")
 
+###To create an MDS plot 
+library(edgeR)
+y <- (normalData)
+
+y <- calcNormFactors(y)
+plotMDS(y, top = 1000, labels = NULL, col = as.numeric(y$samples$dex), 
+        pch = as.numeric(y$samples$cell), cex = 2)
 
 
 
